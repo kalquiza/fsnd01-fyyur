@@ -76,7 +76,7 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    website = db.Column(db.String(120))
+    website_link = db.Column(db.String(120))
     facebook_link = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
@@ -449,13 +449,50 @@ def create_artist_form():
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
   # called upon submitting the new artist listing form
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
+  # modify data to be the data object returned from db insertion
+  # insert form data as a new artist record in the db
+  form = ArtistForm(request.form)
+  error = False
+  try:
+    if form.validate():
+      artist = Artist(
+        name=form.name.data,
+        city=form.city.data,
+        state=form.state.data,
+        phone=form.phone.data,
+        website_link=form.website_link.data,
+        facebook_link=form.facebook_link.data,
+        seeking_venue=form.seeking_venue.data,
+        seeking_description=form.seeking_description.data,
+        image_link=form.image_link.data
+        )
+      db.session.add(artist)
 
-  # on successful db insert, flash success
-  flash('Artist ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
+      # insert form data for genre and artist_genres records
+      genres = form.genres.data
+      for genre in genres:
+        exists = Genre.query.filter_by(name=genre).first()
+        g = Genre(name=genre)
+        # insert genre date as a new genre record in the db if it does not exist
+        if not exists:
+          db.session.add(Genre(g))
+        # insert record for many-to-many relationship between artists and genres
+        artist.genres.append(g)
+
+      db.session.commit()
+    else:
+      error = True
+  except Exception:
+    error = True
+    db.session.rollback()
+  finally:
+    db.session.close()
+  if error: 
+    # on unsuccessful db insert, flash an error instead.
+    flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
+  else:
+    # on successful db insert, flash success
+    flash('Artist ' + request.form['name'] + ' was successfully listed!')
   return render_template('pages/home.html')
 
 
