@@ -32,20 +32,14 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 # Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
-artist_genres = db.Table('artist_genres',
+artist_genre = db.Table('artist_genre',
     db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True),
     db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id'), primary_key=True)
 )
 
-venue_genres = db.Table('venue_genres',
+venue_genre = db.Table('venue_genre',
     db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key=True),
     db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id'), primary_key=True)
-)
-
-shows = db.Table('shows',
-    db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key=True),
-    db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True),
-    db.Column('start_time', db.DateTime, nullable=False)
 )
 
 class Venue(db.Model):
@@ -53,7 +47,7 @@ class Venue(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
-    genres = relationship("Genre", secondary=venue_genres)
+    genres = relationship("Genre", secondary=venue_genre)
     address = db.Column(db.String(120))
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
@@ -63,8 +57,6 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))    
     image_link = db.Column(db.String(500))
-    artists = relationship("Artist", secondary=shows, back_populates="venues")
-
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -73,7 +65,7 @@ class Artist(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
-    genres = relationship("Genre", secondary=artist_genres)
+    genres = relationship("Genre", secondary=artist_genre)
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
@@ -82,7 +74,6 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
-    venues = relationship("Venue", secondary=shows, back_populates="artists")
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -91,6 +82,16 @@ class Genre(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
 
+class Show(db.Model):
+    __tablename__ = 'Show'
+
+    id = db.Column('id', db.Integer, primary_key=True)
+    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
+    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
+    start_time = db.Column(db.DateTime, nullable=False)
+
+    venue = db.relationship(Venue, backref="shows")
+    artist = db.relationship(Artist, backref="shows")
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -282,7 +283,7 @@ def create_venue_submission():
         g = Genre(name=genre)
         # insert genre date as a new genre record in the db if it does not exist
         if not exists:
-          db.session.add(Genre(g))
+          db.session.add(g)
         # insert record for many-to-many relationship between venues and genres
         venue.genres.append(g)
 
@@ -431,7 +432,7 @@ def create_artist_submission():
         g = Genre(name=genre)
         # insert genre date as a new genre record in the db if it does not exist
         if not exists:
-          db.session.add(Genre(g))
+          db.session.add(g)
         # insert record for many-to-many relationship between artists and genres
         artist.genres.append(g)
 
