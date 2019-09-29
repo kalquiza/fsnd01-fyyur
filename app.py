@@ -411,7 +411,6 @@ def create_artist_submission():
         seeking_description=form.seeking_description.data
         )
       db.session.add(artist)
-
       # insert form data for genre and artist_genres records
       genres = form.genres.data
       for genre in genres:
@@ -443,21 +442,27 @@ def create_artist_submission():
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
-  form = ArtistForm()
-  artist={
-    "id": 4,
-    "name": "Guns N Petals",
-    "genres": ["Rock n Roll"],
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "326-123-5000",
-    "website": "https://www.gunsnpetalsband.com",
-    "facebook_link": "https://www.facebook.com/GunsNPetals",
-    "seeking_venue": True,
-    "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
-    "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
-  }
-  # TODO: populate form with fields from artist with ID <artist_id>
+  # shows the edit artist page with the given artist_id
+
+  # populate form with fields from artist with ID <artist_id>
+  try:
+    artist = Artist.query.get(artist_id)
+    form = ArtistForm(
+      name=artist.name,
+      genres=[genre.name for genre in artist.genres],
+      city=artist.city,
+      state=artist.state,
+      phone=artist.phone,
+      website_link=artist.website_link,
+      facebook_link=artist.facebook_link,
+      seeking_venue=artist.seeking_venue,
+      seeking_description=artist.seeking_description,
+      image_link=artist.image_link
+    )
+
+  except Exception:
+    return not_found_error(Exception)
+
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
