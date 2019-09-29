@@ -121,29 +121,33 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
+  # shows list of venues page organized by city, state
+  # replace with real venues data.
+  # num_shows should be aggregated based on number of upcoming shows per venue.
+
+  data=[]
+  # iterate through venues by city, state
+  locations = Venue.query.with_entities(Venue.city, Venue.state).distinct()
+  for location in locations:
+    # add venues located in each city, state
+    venue_list=[]
+    venues = Venue.query.filter_by(city=location[0], state=location[1])
+    for venue in venues:
+      num_upcoming_shows = 0
+      for show in venue.shows:
+        if show.start_time > datetime.today():
+          num_upcoming_shows += 1
+      venue_list.append({
+        "id": venue.id,
+        "name": venue.name,
+        "num_upcoming_shows": num_upcoming_shows
+      })
+    data.append({
+      "city": location[0],
+      "state": location[1],
+      "venues": venue_list
+    })
+    
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
