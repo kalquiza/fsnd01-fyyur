@@ -368,11 +368,30 @@ def search_artists():
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
   # shows the artist page with the given artist_id
-  # TODO Use list comprehension to get shows and filter by date
   
   # replace with real artist data from the Artists table, using artist_id
   try:
     artist = Artist.query.get(artist_id)
+
+    # modify show data to fit template
+    past_shows=[]
+    upcoming_shows=[]
+    for show in artist.shows:
+      if show.start_time > datetime.today():
+        upcoming_shows.append({
+          "venue_id": show.id,
+          "venue_name": show.venue.name,
+          "venue_image_link": show.venue.image_link,
+          "start_time": babel.dates.format_datetime(show.start_time, "EE MM, dd, y h:mma")
+        })
+      else:
+        past_shows.append({
+          "venue_id": show.id,
+          "venue_name": show.venue.name,
+          "venue_image_link": show.venue.image_link,
+          "start_time": babel.dates.format_datetime(show.start_time, "EE MM, dd, y h:mma")
+        })
+
     data={
       "id": artist.id,
       "name": artist.name,
@@ -385,14 +404,14 @@ def show_artist(artist_id):
       "seeking_venue": artist.seeking_venue,
       "seeking_description": artist.seeking_description,
       "image_link": artist.image_link,
-      "past_shows": [],
-      "upcoming_shows": [],
-      "past_shows_count": 0,
-      "upcoming_shows_count": 0,
+      "past_shows": past_shows,
+      "upcoming_shows": upcoming_shows,
+      "past_shows_count": len(past_shows),
+      "upcoming_shows_count": len(upcoming_shows)
     }
   except Exception:
-    return not_found_error(Exception)      
-
+    return not_found_error(Exception)
+    
   return render_template('pages/show_artist.html', artist=data)
 
 #  Create
