@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask_wtf import Form
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
-from wtforms.validators import DataRequired, AnyOf, URL
+from wtforms.validators import DataRequired, AnyOf, URL, Regexp
 from enum import Enum
 
 # implement enum restriction using coerce
@@ -137,7 +137,7 @@ class VenueForm(Form):
         'address', validators=[DataRequired()]
     )
     phone = StringField(
-        'phone'
+        'phone', validators=[DataRequired(), Regexp('\d{3}-\d{3}-\d{4}$')]
     )
     genres = SelectMultipleField(
         'genres', validators=[DataRequired()],
@@ -169,8 +169,7 @@ class ArtistForm(Form):
         coerce = State.coerce
     )
     phone = StringField(
-        # TODO implement validation logic for state
-        'phone'
+        'phone', validators=[DataRequired(), Regexp('\d{3}-\d{3}-\d{4}$')]
     )
     genres = SelectMultipleField(
         'genres', validators=[DataRequired()],
