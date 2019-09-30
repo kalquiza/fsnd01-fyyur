@@ -14,6 +14,7 @@ from flask_wtf import Form
 from forms import *
 from flask_migrate import Migrate
 from sqlalchemy.orm import relationship
+from sqlalchemy import event
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -86,12 +87,33 @@ class Show(db.Model):
     __tablename__ = 'Show'
 
     id = db.Column('id', db.Integer, primary_key=True)
-    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
-    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
+    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id', ondelete='CASCADE'))
+    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id', ondelete='CASCADE'))
     start_time = db.Column(db.DateTime, nullable=False)
 
-    venue = db.relationship(Venue, backref="shows")
-    artist = db.relationship(Artist, backref="shows")
+    venue = db.relationship(Venue, backref="shows", passive_deletes=True, cascade="all")
+    artist = db.relationship(Artist, backref="shows", passive_deletes=True, cascade="all")
+
+
+#----------------------------------------------------------------------------#
+# Helpers
+#----------------------------------------------------------------------------#
+@event.listens_for(db.session, 'after_flush')
+def delete_address_orphans(session, ctx):
+  # delete-orphan cascades only work for children with a single parent 
+  # manually delete orphans in Show with an event listener that cleans
+  # up after each flush
+
+  if any(isinstance(i, Show) for i in session.dirty):
+    query = session.query(Show).filter_by(venue_id=None)
+    orphans = query.all()
+    for orphan in orphans:
+      session.delete(orphan)
+
+    query = session.query(Show).filter_by(artist_id=None)
+    orphans = query.all()
+    for orphan in orphans:
+      session.delete(orphan)
 
 #----------------------------------------------------------------------------#
 # Filters.
