@@ -257,16 +257,13 @@ def create_venue_submission():
       db.session.add(venue)
 
       # insert form data for genre and venue_genres records
-      genres = form.genres.data
-      for genre in genres:
-        exists = Genre.query.filter_by(name=genre).first()
-        g = Genre(name=genre)
-        # insert genre date as a new genre record in the db if it does not exist
-        if not exists:
-          db.session.add(g)
-        # insert record for many-to-many relationship between venues and genres
-        venue.genres.append(g)
-
+      for genre in form.genres.data:
+        existing_genre = Genre.query.filter_by(name=genre).first()
+        # insert genre data as a new genre record in the db if it does not exist
+        if not existing_genre:
+          venue.genres.append(Genre(name=genre))
+        else:
+          venue.genres.append(existing_genre)
       db.session.commit()
     else:
       error = True
@@ -437,16 +434,13 @@ def create_artist_submission():
         )
       db.session.add(artist)
       # insert form data for genre and artist_genres records
-      genres = form.genres.data
-      for genre in genres:
-        exists = Genre.query.filter_by(name=genre).first()
-        g = Genre(name=genre)
-        # insert genre date as a new genre record in the db if it does not exist
-        if not exists:
-          db.session.add(g)
-        # insert record for many-to-many relationship between artists and genres
-        artist.genres.append(g)
-
+      for genre in form.genres.data:
+        existing_genre = Genre.query.filter_by(name=genre).first()
+        # insert genre data as a new genre record in the db if it does not exist
+        if not existing_genre:
+          artist.genres.append(Genre(name=genre))
+        else:
+          artist.genres.append(existing_genre)
       db.session.commit()
     else:
       error = True
