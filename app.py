@@ -311,8 +311,53 @@ def edit_venue(venue_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
-  # TODO: take values from the form submitted, and update existing
+  # take values from the form submitted, and update existing
   # venue record with ID <venue_id> using the new attributes
+
+  form = VenueForm(request.form)
+  error = False
+  try:
+    venue = Venue.query.get(venue_id)
+
+    if form.validate():
+      venue.name=form.name.data
+      venue.address=form.address.data
+      venue.city=form.city.data
+      venue.state=form.state.data
+      venue.phone=form.phone.data
+      venue.website_link=form.website_link.data
+      venue.facebook_link=form.facebook_link.data
+      venue.image_link=form.image_link.data
+      venue.seeking_talent=form.seeking_talent.data
+      venue.seeking_description=form.seeking_description.data
+      
+      # remove existing venue-genre relations
+      venue.genres = []
+
+      # create new venue-genre relations
+      for genre in form.genres.data:
+        existing_genre = Genre.query.filter_by(name=genre).first()
+        # insert genre data as a new genre record in the db if it does not exist
+        if not existing_genre:
+          venue.genres.append(Genre(name=genre))
+        else:
+          venue.genres.append(existing_genre)
+          
+      db.session.commit()
+    else:
+      error = True
+  except Exception:
+    error = True
+    db.session.rollback()
+  finally:
+    db.session.close()
+  if error: 
+    # on unsuccessful db insert, flash an error instead.
+    flash('An error occurred. Venue ' + request.form['name'] + ' could not be updated.')
+  else:
+    # on successful db insert, flash success
+    flash('Venue ' + request.form['name'] + ' was successfully updated!')
+
   return redirect(url_for('show_venue', venue_id=venue_id))
 
 
@@ -516,7 +561,7 @@ def edit_artist_submission(artist_id):
           artist.genres.append(Genre(name=genre))
         else:
           artist.genres.append(existing_genre)
-          
+
       db.session.commit()
     else:
       error = True
