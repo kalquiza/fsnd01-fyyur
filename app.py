@@ -299,7 +299,7 @@ def edit_venue(venue_id):
       phone=venue.phone,
       website_link=venue.website_link,
       facebook_link=venue.facebook_link,
-      seeking_talen=venue.seeking_talent,
+      seeking_talent=venue.seeking_talent,
       seeking_description=venue.seeking_description,
       image_link=venue.image_link
     )
