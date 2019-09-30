@@ -360,6 +360,47 @@ def edit_venue_submission(venue_id):
 
   return redirect(url_for('show_venue', venue_id=venue_id))
 
+#  Delete
+#  ----------------------------------------------------------------
+
+@app.route('/venues/<venue_id>', methods=['DELETE'])
+def delete_venue(venue_id):
+  # Complete this endpoint for taking a venue_id, and using
+  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+
+  venue_name= None
+  try:
+    venue = Venue.query.get(venue_id)
+    venue_name = venue.name
+    db.session.delete(venue)
+    db.session.commit()
+  except Exception:
+    db.session.rollback()
+  finally:
+    db.session.close()
+  # returns the name of
+  return venue_name
+
+
+@app.route('/venues/<venue_id>/delete', methods=['POST'])
+def delete_venue_submission(venue_id):
+  # create endpoint to allow deletions from the edit page
+
+  venue = None
+  error = False
+  try:
+    venue = delete_venue(venue_id)
+    print(venue)
+  except Exception:
+    error = True
+  if venue is None: 
+    # on unsuccessful db deletion, flash an error instead.
+    flash('An error occurred. The selected venue could not be deleted.')
+  else:
+    # on successful db deletion, flash success
+    flash('Venue ' + venue + ' was successfully deleted.')
+    
+  return redirect(url_for('index'))
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -578,6 +619,16 @@ def edit_artist_submission(artist_id):
     flash('Artist ' + request.form['name'] + ' was successfully updated!')
 
   return redirect(url_for('show_artist', artist_id=artist_id))
+
+#  Update
+#  ----------------------------------------------------------------
+
+@app.route('/artist/<artist_id>', methods=['DELETE'])
+def delete_artist(artist_id):
+  # TODO: Complete this endpoint for taking a artist_id, and using
+  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+
+  return None
 
 
 #  Shows

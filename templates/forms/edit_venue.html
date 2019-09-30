@@ -2,7 +2,7 @@
 {% block title %}Edit Venue{% endblock %}
 {% block content %}
   <div class="form-wrapper">
-    <form class="form" method="post" action="/venues/{{venue.id}}/edit">
+    <form class="form" id="edit_form" method="post" action="/venues/{{venue.id}}/edit">
     {{ form.csrf_token }}
       <h3 class="form-heading">Edit venue <em>{{ venue.name }}</em> <a href="{{ url_for('index') }}" title="Back to homepage"><i class="fa fa-home pull-right"></i></a></h3>
       <div class="form-group">
@@ -53,10 +53,11 @@
         <label>What kind of talent are you looking for?</label>
         {{ form.seeking_description(class_ = 'form-control', placeholder='Add a description', autofocus = true) }}
       </div>
-      <div class="btn-toolbar">
-          <input type="submit" value="Edit Venue" class="btn btn-primary btn-lg btn-block">
-          <input type="button" value="Delete Venue" class="btn btn-warning btn-lg btn-block">
-        </div>
     </form>
+  </div>
+  <form class="form" id="delete_form" method="post" action="/venues/{{venue.id}}/delete"/>
+  <div class="btn-toolbar form-wrapper">
+      <input type="submit" form=edit_form value="Edit Venue" class="btn btn-primary btn-lg btn-block">
+      <input type="submit" form=delete_form value="Delete Venue" id="delete-venue" class="btn btn-warning btn-lg btn-block">
   </div>
 {% endblock %}
