@@ -149,11 +149,11 @@ def venues():
 
   data=[]
   # iterate through venues by city, state
-  locations = Venue.query.with_entities(Venue.city, Venue.state).distinct()
+  locations = Venue.query.order_by(Venue.state, Venue.city).with_entities(Venue.city, Venue.state).distinct()
   for location in locations:
     # add venues located in each city, state
     venue_list=[]
-    venues = Venue.query.filter_by(city=location[0], state=location[1])
+    venues = Venue.query.order_by(Venue.name).filter_by(city=location[0], state=location[1])
     for venue in venues:
       num_upcoming_shows = 0
       for show in venue.shows:
@@ -177,7 +177,7 @@ def search_venues():
   # implement search on artists with partial string search. Ensure it is case-insensitive.
 
   search='%'+request.form.get('search_term')+'%'
-  venues = Venue.query.filter(Venue.name.ilike(search)).all()
+  venues = Venue.query.order_by(Venue.name).filter(Venue.name.ilike(search)).all()
   count= Venue.query.filter(Venue.name.ilike(search)).count()
   data=[]
   
@@ -429,7 +429,7 @@ def delete_venue_submission(venue_id):
 @app.route('/artists')
 def artists():
   # TODO: replace with real data returned from querying the database
-  artists = Artist.query.all()
+  artists = Artist.query.order_by(Artist.name).all()
   data=[]
   for artist in artists:
     data.append({
@@ -445,7 +445,7 @@ def search_artists():
   # search for "band" should return "The Wild Sax Band".
 
   search='%'+request.form.get('search_term')+'%'
-  artists = Artist.query.filter(Artist.name.ilike(search)).all()
+  artists = Artist.query.order_by(Artist.name).filter(Artist.name.ilike(search)).all()
   count= Artist.query.filter(Artist.name.ilike(search)).count()
   data=[]
   
