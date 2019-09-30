@@ -486,8 +486,51 @@ def edit_artist(artist_id):
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-  # TODO: take values from the form submitted, and update existing
+  # take values from the form submitted, and update existing
   # artist record with ID <artist_id> using the new attributes
+
+  form = ArtistForm(request.form)
+  error = False
+  try:
+    artist = Artist.query.get(artist_id)
+
+    if form.validate():
+      artist.name=form.name.data
+      artist.city=form.city.data
+      artist.state=form.state.data
+      artist.phone=form.phone.data
+      artist.website_link=form.website_link.data
+      artist.facebook_link=form.facebook_link.data
+      artist.image_link=form.image_link.data
+      artist.seeking_venue=form.seeking_venue.data
+      artist.seeking_description=form.seeking_description.data
+      
+      # remove existing artist-genre relations
+      artist.genres = []
+
+      # create new artist-genre relations
+      for genre in form.genres.data:
+        existing_genre = Genre.query.filter_by(name=genre).first()
+        # insert genre data as a new genre record in the db if it does not exist
+        if not existing_genre:
+          artist.genres.append(Genre(name=genre))
+        else:
+          artist.genres.append(existing_genre)
+          
+      db.session.commit()
+    else:
+      error = True
+  except Exception:
+    error = True
+    db.session.rollback()
+  finally:
+    db.session.close()
+  if error: 
+    # on unsuccessful db insert, flash an error instead.
+    flash('An error occurred. Artist ' + request.form['name'] + ' could not be updated.')
+  else:
+    # on successful db insert, flash success
+    flash('Artist ' + request.form['name'] + ' was successfully updated!')
 
   return redirect(url_for('show_artist', artist_id=artist_id))
 
