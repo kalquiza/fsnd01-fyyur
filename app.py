@@ -620,16 +620,47 @@ def edit_artist_submission(artist_id):
 
   return redirect(url_for('show_artist', artist_id=artist_id))
 
-#  Update
+#  Delete
 #  ----------------------------------------------------------------
 
-@app.route('/artist/<artist_id>', methods=['DELETE'])
+@app.route('/artists/<artist_id>', methods=['DELETE'])
 def delete_artist(artist_id):
-  # TODO: Complete this endpoint for taking a artist_id, and using
+  # Complete this endpoint for taking a artist_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
 
-  return None
+  artist_name= None
+  try:
+    artist = Artist.query.get(artist_id)
+    artist_name = artist.name
+    db.session.delete(artist)
+    db.session.commit()
+  except Exception:
+    db.session.rollback()
+  finally:
+    db.session.close()
+  # returns the name of
+  return artist_name
 
+
+@app.route('/artists/<artist_id>/delete', methods=['POST'])
+def delete_artist_submission(artist_id):
+  # create endpoint to allow deletions from the edit page
+
+  artist = None
+  error = False
+  try:
+    artist = delete_artist(artist_id)
+    print(artist)
+  except Exception:
+    error = True
+  if artist is None: 
+    # on unsuccessful db deletion, flash an error instead.
+    flash('An error occurred. The selected artist could not be deleted.')
+  else:
+    # on successful db deletion, flash success
+    flash('Artist ' + artist + ' was successfully deleted.')
+
+  return redirect(url_for('index'))
 
 #  Shows
 #  ----------------------------------------------------------------

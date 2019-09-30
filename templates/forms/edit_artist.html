@@ -2,7 +2,7 @@
 {% block title %}Edit Artist{% endblock %}
 {% block content %}
   <div class="form-wrapper">
-    <form class="form" method="post" action="/artists/{{artist.id}}/edit">
+    <form class="form" id="edit_form" method="post" action="/artists/{{artist.id}}/edit">
     {{ form.csrf_token }}
        <h3 class="form-heading">Edit artist <em>{{ artist.name }}</em><a href="{{ url_for('index') }}" title="Back to homepage"><i class="fa fa-home pull-right"></i></a></h3>
        <div class="form-group">
@@ -49,10 +49,11 @@
         <label>Where are you looking to perform?</label>
         {{ form.seeking_description(class_ = 'form-control', placeholder='Add a description', autofocus = true) }}
       </div>
-      <div class="btn-toolbar">
-        <input type="submit" value="Edit Artist" class="btn btn-primary btn-lg btn-block">
-        <input type="button" value="Delete Artist" class="btn btn-warning btn-lg btn-block">
-      </div>
     </form>
+  </div>
+  <form class="form" id="delete_form" method="post" action="/artists/{{artist.id}}/delete"/>
+  <div class="btn-toolbar form-wrapper">
+      <input type="submit" form=edit_form value="Edit Artist" class="btn btn-primary btn-lg btn-block">
+      <input type="submit" form=delete_form value="Delete Artist" class="btn btn-warning btn-lg btn-block">
   </div>
 {% endblock %}
