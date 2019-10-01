@@ -59,8 +59,6 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String(120))    
     image_link = db.Column(db.String(500))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
 class Artist(db.Model):
     __tablename__ = 'Artist'
 
@@ -75,8 +73,6 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.Boolean, nullable=False, default=False)
     seeking_description = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Genre(db.Model):
     __tablename__ = 'Genre'
@@ -94,10 +90,10 @@ class Show(db.Model):
     venue = db.relationship(Venue, backref="shows", passive_deletes=True, cascade="all")
     artist = db.relationship(Artist, backref="shows", passive_deletes=True, cascade="all")
 
+#----------------------------------------------------------------------------#
+# Helpers.
+#----------------------------------------------------------------------------#
 
-#----------------------------------------------------------------------------#
-# Helpers
-#----------------------------------------------------------------------------#
 @event.listens_for(db.session, 'after_flush')
 def delete_address_orphans(session, ctx):
   # delete-orphan cascades only work for children with a single parent 
@@ -412,7 +408,6 @@ def delete_venue_submission(venue_id):
   error = False
   try:
     venue = delete_venue(venue_id)
-    print(venue)
   except Exception:
     error = True
   if venue is None: 
@@ -428,7 +423,7 @@ def delete_venue_submission(venue_id):
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
-  # TODO: replace with real data returned from querying the database
+  # replace with real data returned from querying the database
   artists = Artist.query.order_by(Artist.name).all()
   data=[]
   for artist in artists:
@@ -672,7 +667,6 @@ def delete_artist_submission(artist_id):
   error = False
   try:
     artist = delete_artist(artist_id)
-    print(artist)
   except Exception:
     error = True
   if artist is None: 
@@ -724,11 +718,6 @@ def create_show_submission():
   error = False
   try:
     if form.validate():
-      print('data is valid')
-      print(form.venue_id.data)
-      print(form.artist_id.data)
-      print(form.start_time.data)
-
       show = Show(
         venue_id=form.venue_id.data,
         artist_id=form.artist_id.data,
